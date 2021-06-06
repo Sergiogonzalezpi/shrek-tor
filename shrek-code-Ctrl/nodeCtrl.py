@@ -45,9 +45,9 @@ def exchange_keys(my_ip, my_port):
         if str(ack) == 'ACK!':
             print('MATCH-FINAL!!!!!!!!!!!!!!!')
 
-my_ip, my_port = configuration()
-myhost = 'ca'
+my_port, my_port = configuration()
+myhost = 'ctrl'
 exchange_keys(my_ip, my_port)
-print((ip_ca, port_ca))
+print((my_ip, my_port))
 
 ''' ------------------------------------------------------------------------------- '''

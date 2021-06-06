@@ -1,8 +1,0 @@
-
-rm *key* *host* *pyc* *.cert* *.crs* *dec* *enc*
-
-openssl rsautl -encrypt -in nodeCA.py -out encryp.enc -pubin -inkey pubkeyCA.pem
-
-openssl enc -aes-256-cbc -pass file:pubkeyCA.pem -in nodeCA.py -out encryp.enc -pbkdf2
-
-openssl enc -aes-256-cbc -d -pass file:privkeyCA.pem -in encryp.enc -out decryp.dec -pbkdf2
