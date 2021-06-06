@@ -2,7 +2,7 @@
 
 import os
 import json
-from socket import gethostname
+import socket
 import random
 
 # Network Configuration - Control Protocol
@@ -28,17 +28,31 @@ def keep_ip(route_config_file, ip, port):
         file.write(json_obj + '\n')
         file.close()
 
-def get_info_host(route_config_file):
+def set_info_host(route_config_file, port):
     file = open(route_config_file, 'rb')
     file_data = file.read()
     file.close()
     json_data = json.loads(str(file_data))
     json_data = dict(json_data)
-    ip = json_data['host']['ip']
-    port = json_data['host']['port']
+    hostname = socket.gethostname()
+    json_data['host']['ip'] = socket.gethostbyname(hostname)
+    json_data['host']['port'] = port
+    json_obj = json.dumps(json_data, indent=4)
+    file = open(route_config_file, 'w')
+    file.write(json_obj + '\n')
+    file.close()
+
+def get_info_host(route_config_file, opc):
+    file = open(route_config_file, 'rb')
+    file_data = file.read()
+    file.close()
+    json_data = json.loads(str(file_data))
+    json_data = dict(json_data)
+    ip = json_data[str(opc)]['ip']
+    port = json_data[str(opc)]['port']
     return (ip,port)
 
-def json_ToString(json_file):
+def json_toString(json_file):
     file = open(json_file, 'rb')
     file_data = file.read()
     file.close()
