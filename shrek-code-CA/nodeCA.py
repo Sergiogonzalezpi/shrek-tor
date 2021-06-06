@@ -7,9 +7,6 @@ import time
 
 ''' -Protocol_NodeCA----------------------------------------------------------------- '''
 
-ip_ca = ''
-port_ca = ''
-
 # iniciar las configuraciones del nodo
 
 def configuration():
@@ -22,11 +19,11 @@ def configuration():
     my_ip, my_port = pctrl.get_info_host('hostconfig.json', 'host')
     return (my_ip, my_port)
 
-def config_security():
+def config_security(ip):
     # Creacion de los certificados de la CA
 
     ## Claves asimetricas
-    psec.create_certificate_CA('privkeyCA.pem', 'ES', 'Madrid', 'UPM', ip_ca, 'certificadoCA.cert')
+    psec.create_certificate_CA('privkeyCA.pem', 'ES', 'Madrid', 'UPM', ip, 'certificadoCA.cert')
     psec.extract_pub_key('privkeyCA.pem', 'pubkeyCA.pem')
 
 def exchange_keys(my_ip, my_port):
@@ -37,7 +34,7 @@ def exchange_keys(my_ip, my_port):
         file = open('pubkeynode.pem', 'w')
         file.write(str(pubkeynode))
         file.close()
-        file = open('privkeyCA.pem', 'rb')
+        file = open('pubkeyCA.pem', 'rb')
         file_data = file.read()
         file.close()
         time.sleep(1)
@@ -47,7 +44,10 @@ def exchange_keys(my_ip, my_port):
 
 my_ip, my_port = configuration()
 myhost = 'ca'
-exchange_keys(my_ip, my_port)
-print((ip_ca, port_ca))
+config_security(my_ip)
+while True:
+    exchange_keys(my_ip, my_port)
+pctrl.execution('rm pubkeynode*')
+print((my_ip, my_port))
 
 ''' ------------------------------------------------------------------------------- '''

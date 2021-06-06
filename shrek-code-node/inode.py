@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import shrek_protocols.protocol_sendrecv as psr
-import shrek_protocols.protocol_control as pctrl
-import shrek_protocols.protocol_security as psec
+import protocol_sendrecv as psr
+import protocol_control as pctrl
+import protocol_security as psec
 import time
 
 
@@ -22,15 +22,14 @@ def configuration():
 
 # solicitud de certificados inicio de la ejecucion del nodo - nodo de seguridad
 
-def create_request_cert():
+def create_request_cert(ip):
     ## Creacion de solicitud de certificado
-
     file_priv_key = 'privkey.pem'
     file_pub_key = 'pubkey.pem'
     file_req_cert = 'request.crs'
     psec.generate_priv_key(file_priv_key)
     psec.extract_pub_key(file_priv_key, file_pub_key)
-    psec.request_certificate(file_priv_key, 'ES', 'Madrid', 'UPM', my_ip, file_req_cert)
+    psec.request_certificate(file_priv_key, 'ES', 'Madrid', 'UPM', ip, file_req_cert)
 
 def exchange_pubkey(my_ip, my_port, opc):
     ## Conseguir claves de ca / control
@@ -49,7 +48,7 @@ def exchange_pubkey(my_ip, my_port, opc):
             print('MATCH-2!!!')
         pubkeyCA = str(psr.recive(str(my_ip), int(my_port)))
         if pubkeyCA:
-            file = open('pubkeyCA.pem', 'w')
+            file = open('pubkey' + opc + '.pem', 'w')
             file.write(str(pubkeyCA))
             file.close()
             print('MATCH-FINAL!!!!!!!!!!!!!!!')
@@ -57,6 +56,7 @@ def exchange_pubkey(my_ip, my_port, opc):
 
 my_ip, my_port = configuration()
 myhost = 'host'
+create_request_cert(my_ip)
 exchange_pubkey(my_ip, my_port, 'ca')
 exchange_pubkey(my_ip, my_port, 'ctrl')
 print(my_ip,my_port)

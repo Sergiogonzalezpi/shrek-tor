@@ -122,18 +122,3 @@ def execution(command):
         return False
 
 
-# Test Protocols
-
-# generate_priv_key('privkeyprueba')
-# extract_pub_key('privkeyprueba', 'pubkeyprueba')
-# request_certificate('tempkey', 'ES', 'Madrid', 'Shrek-Tor', 'prueba', 'usersolicition')
-# create_certificate_CA('privkey', 'ES', 'Madrid', 'Shrek-Tor', gethostname(), 'CACertificate')
-# sign_certificate_CA('usersolicition', 'CACertificate', 'privkey', 'certificateuser')
-
-'''
------------------------------------------------------------------------------------------
-def generate_resume(route_hash, route_file):
-    command = 'openssl dgst -sha1 -out ' + route_hash + ' ' + route_file
-    execution(command)
------------------------------------------------------------------------------------------
-'''
