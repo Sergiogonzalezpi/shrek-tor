@@ -1,4 +1,6 @@
 
+rm *key* *pyc* *.cert* *.crs* *dec* *enc*
+
 rm *key* *host* *pyc* *.cert* *.crs* *dec* *enc*
 
 openssl rsautl -encrypt -in nodeCA.py -out encryp.enc -pubin -inkey pubkeyCA.pem
