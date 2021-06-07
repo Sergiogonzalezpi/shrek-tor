@@ -10,8 +10,8 @@ import time
 # iniciar las configuraciones del nodo
 
 def configuration():
-    ## Descargar configuracion de host
-    pctrl.get_config_files()
+    #   Download configure host
+    # pctrl.get_config_files() # Only if the node is connect to internet direct
 
     ## Configurar el nodo
     pctrl.set_info_host('hostconfig.json', 5000)
