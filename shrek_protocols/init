@@ -1,5 +1,5 @@
 
-rm *key* *pyc* *.cert* *.crs* *dec* *enc*
+rm *key* *pyc* *.crt* *.csr* *dec* *enc* *temp* *newhost* *ntemp*
 
 rm *key* *host* *pyc* *.cert* *.crs* *dec* *enc*
 

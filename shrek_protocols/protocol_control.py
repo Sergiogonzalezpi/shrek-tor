@@ -59,20 +59,53 @@ def get_info_host(route_config_file, opc):
 
 # Tunneling Network - Control Protocol
 
-def add_host_to_route(route_config_file, ip, port):
+def add_host_to_network(route_config_file, ip, port, pubkey):
     file = open(route_config_file, 'rb')
     file_data = file.read()
     file.close()
     json_data = json.loads(str(file_data))
     json_data = dict(json_data)
     index = len(json_data['hosts'])
-    json_data['hosts'].append({})
-    json_data['hosts'][index]['ip'] = ip
-    json_data['hosts'][index]['port'] = port
-    json_obj = json.dumps(json_data, indent=4)
-    file = open(route_config_file, 'w')
-    file.write(json_obj + '\n')
+    try:
+        exists = 0
+        for count in range(0, index):
+            if get_host_to_network(route_config_file, ip):
+                json_data['hosts'][count]['port'] = port
+                json_data['hosts'][count]['pubkey'] = pubkey
+                exists = 1
+        if not exists:
+            raise ValueError()
+    except ValueError:
+        json_data['hosts'].append({})
+        json_data['hosts'][index]['ip'] = ip
+        json_data['hosts'][index]['port'] = port
+        json_data['hosts'][index]['pubkey'] = pubkey
+    finally:
+        json_obj = json.dumps(json_data, indent=4)
+        file = open(route_config_file, 'w')
+        file.write(json_obj + '\n')
+        file.close()
+
+
+def get_host_to_network(route_config_file, ip='', position=-1):
+    file = open(route_config_file, 'rb')
+    file_data = file.read()
     file.close()
+    json_data = json.loads(str(file_data))
+    json_data = dict(json_data)
+    index = len(json_data['hosts'])
+    if (position != -1) and ():
+        ipr = json_data['hosts'][position]['ip']
+        portr = json_data['hosts'][position]['port']
+        pubkeyr = json_data['hosts'][position]['pubkey']
+        return ipr, portr, pubkeyr
+    for count in range(0, index):
+        if json_data['hosts'][count]['ip'] == str(ip):
+            ipr = json_data['hosts'][count]['ip']
+            portr = json_data['hosts'][count]['port']
+            pubkeyr = json_data['hosts'][count]['pubkey']
+            return ipr, portr, pubkeyr
+    return 0
 
 
 def set_instructions_tunnel(route_config_file):
@@ -95,7 +128,7 @@ def get_config_files():
 
 #   Read and write files
 
-def files(file_input, wr, message = ''):
+def files(file_input, wr, message=''):
     if str(wr) == 'write':
         opc = 'w'
     else:
@@ -140,4 +173,3 @@ def str_base64(str_n):
 
 def base64_str(base_str):
     return base64.b64decode(str(base_str))
-

@@ -13,7 +13,7 @@ def create_certificate_CA(route_privkey, country, city, organization, ip, name_c
 
 
 def sign_certificate_CA(csr_name_file, certificate_CA, private_key_CA, name_certificate_signed):
-    command = 'openssl x509 -req -days 365 -in ' + csr_name_file + ' -CA ' + certificate_CA + ' -CAkey ' + private_key_CA + ' -out ' + name_certificate_signed
+    command = 'openssl x509 -req -days 365 -in ' + csr_name_file + ' -CA ' + certificate_CA + ' -CAkey ' + private_key_CA + ' -set_serial 000 -out ' + name_certificate_signed
     execution(command)
 
 
