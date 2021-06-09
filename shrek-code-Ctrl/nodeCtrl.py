@@ -5,130 +5,85 @@ import protocol_sendrecv as psr
 import protocol_control as pctrl
 import protocol_security as psec
 import time
+import random
+import json
 '''
 
-
+import shrek_utilities.utility_node as utln
+import json
 import shrek_protocols.protocol_sendrecv as psr
 import shrek_protocols.protocol_control as pctrl
 import shrek_protocols.protocol_security as psec
 import time
+import random
 
 ''' -Protocol_NodeCtrl----------------------------------------------------------------- '''
 
-# Iniciar las configuraciones del nodo
+# Variables
+my_host = 'ctrl'
+my_port = 5000
+pub_key_ca = 'pubkeyca.pem'
+count_num_host = 0
 
-def configuration():
-    #   Download configure host
-    # pctrl.get_config_files() # Only if the node is connect to internet direct
+# Configurate
+print('[+]--------Configurando nodo ...')
+my_ip = utln.configuration(my_port)
 
-    ## Configurar el nodo
-    pctrl.set_info_host('hostconfig.json', 5000)
+# Exchange keys
+print('[+]--------Intercambio de clave publica ...')
+utln.req_exchange_pubkey(my_ip, my_port, 'ca')
 
-    my_ip, my_port = pctrl.get_info_host('hostconfig.json', 'host')
-    return (my_ip, my_port)
+# Create request certificate
+print('[+]--------Creacion de solicitud de certificado ...')
+utln.create_request_cert(my_ip)
+print('[+]--------Solicitud de firmado de certificado ...')
+utln.req_cert_ca(my_ip, my_port, pub_key_ca)
 
-# Creacion de los certificados de la CA
-
-def config_security(ip):
-    ## Claves asimetricas
-    psec.create_certificate_CA('privkeyCtrl.pem', 'ES', 'Madrid', 'UPM', ip, 'certificadoCtrl.cert')
-    psec.extract_pub_key('privkeyCtrl.pem', 'pubkeyCtrl.pem')
-
-# Intercambio de claves
-
-def send_exchange_keys(my_ip, my_port):
-    recibe = psr.recive(str(my_ip), int(my_port))
-    ip_target, port_taget, solicitud = eval(str(recibe))
-    if str(solicitud) == "solicitar clave pub":
-        pubkeynode = psr.recive(str(my_ip), int(my_port))
-        file = open('pubkeynode.pem', 'w')
-        file.write(str(pubkeynode))
-        file.close()
-        file = open('pubkeyCtrl.pem', 'rb')
-        file_data = file.read()
-        file.close()
-        time.sleep(1)
-        ack = psr.send(str(file_data), str(ip_target), int(port_taget))
-        if str(ack) == 'ACK!':
-            print('MATCH-FINAL!!!!!!!!!!!!!!!')
-
-def req_exchange_pubkey(my_ip, my_port, opc):
-    ## Conseguir claves de ca / control
-    msg = 'solicitar clave pub'
-    ip_target, port_target = pctrl.get_info_host('hostconfig.json', opc)
-    print(str((my_ip, my_port, msg)))
-    confirm_msg = psr.send(str((my_ip, my_port, msg)), str(ip_target), int(port_target))
-    if(str(confirm_msg) == 'ACK!'):
-        print('MATCH-1!!!')
-        file = open('pubkeyCtrl.pem', 'rb')
-        file_data = file.read()
-        file.close()
-        time.sleep(0.5)
-        recibe = psr.send(str(file_data), str(ip_target), int(port_target))
-        if str(recibe) == 'ACK!':
-            print('MATCH-2!!!')
-        pubkeyCA = str(psr.recive(str(my_ip), int(my_port)))
-        if pubkeyCA:
-            file = open('pubkey' + opc + '.pem', 'w')
-            file.write(str(pubkeyCA))
-            file.close()
-            print('MATCH-FINAL!!!!!!!!!!!!!!!')
-
-# Ejecucion
-
-# Configuracion del nodo ctrl
-
-my_ip, my_port = configuration()
-myhost = 'ctrl'
-
-# Configuration security
-
-config_security(my_ip)
-
-    ## Request keys CA
-req_exchange_pubkey(my_ip, my_port, 'ca')
-send_exchange_keys(my_ip, my_port)
-
-# Wait to request
-
-priv_key_aes = 'privkeyaes.pem'
-priv_key_aes_enc = 'privkeyaes.enc'
-my_pub_key = 'pubkeyCtrl.pem'
-my_priv_key = 'privkeyCtrl.pem'
-file_host_enc = 'newhost.enc'
-file_host_dec = 'newhost.json'
-
-message = psr.recive(my_ip, my_port)
-
-file = open(priv_key_aes_enc, 'w')
-file.write(str(message))
-file.close()
-
-psec.decrypt_rsa(my_priv_key, priv_key_aes_enc, priv_key_aes)
-
-file = open(priv_key_aes, 'rb')
-file_data = file.read()
-file.close()
-
-print(file_data)
-
-message = psr.recive(my_ip, my_port)
-
-file = open(file_host_enc, 'w')
-file.write(str(message))
-file.close()
-
-psec.decrypt_aes(priv_key_aes, file_host_enc, file_host_dec)
-
-file = open(file_host_dec, 'rb')
-file_data = file.read()
-file.close()
-
-print(file_data)
-
-new_ip, new_port = pctrl.get_info_host(file_host_dec, 'host')
-pctrl.add_host_to_route('networkhosts.json', new_ip, new_port)
-
-print((my_ip, my_port))
-
-''' ------------------------------------------------------------------------------- '''
+while True:
+    print('[+] Wait request ...')
+    verified = False
+    message = psr.recive(my_ip, my_port)
+    ip_target, port_target, request = eval(message)
+    print('[+]--------Request: <' + request + '>')
+    if request == 'new host':  # -------------------------------------------
+        file_temp = 'tempfile.temp'
+        pub_key_node = psr.recive(my_ip, my_port)
+        utln.new_host(ip_target, port_target, pub_key_node)
+        count_num_host += 1
+        print('    (-) Added ' + str(count_num_host) + ' hosts')
+    elif request == 'send data':  # -------------------------------------------
+        networkhostfile = 'networkhosts.json'
+        temproutefile = 'temproute.json'
+        temp_ip = 'tempip.temp'
+        temp_ip_enc = 'tempip.enc'
+        temp_privaes = 'tepmprivaes.pem'
+        temp_privaes_enc = 'tepmprivaes.enc'
+        temp_pubrsa = 'temppubrsa.pem'
+        message = psr.recive(my_ip, my_port)
+        if count_num_host > 1:
+            nodes = []
+            nodes.append(random.randint(0, count_num_host-1))
+            validate = False
+            nodes.append(-1)
+            while validate:
+                nodes[1] = random.randint(0, count_num_host-1)
+                if not nodes[0] == nodes[1]:
+                    validate = True
+            pctrl.execution('cp ' + networkhostfile + ' ' + temproutefile)
+            json_file = pctrl.files(temproutefile, 'read')
+            json_data = json.loads(json_file)
+            generate_route = eval(str(json_data))
+            generate_route['route'] = []
+            for i in range(0, 1):
+                pctrl.files(temp_ip, 'write', generate_route['hosts'][nodes[i]]['ip'])
+                pctrl.files(temp_pubrsa, 'write', generate_route['hosts'][nodes[i]]['pubkey'])
+                psec.generate_priv_key_AES(temp_privaes)
+                psec.encrypt_rsa(temp_pubrsa, temp_privaes, temp_privaes_enc)
+                psec.encrypt_aes(temp_privaes, temp_ip, temp_ip_enc)
+                ip_enc = pctrl.files(temp_ip_enc, 'read')
+                key_enc = pctrl.files(temp_privaes_enc, 'read')
+                generate_route['route'].append({})
+                generate_route['route'][i]['ip'] = str(ip_enc)
+                generate_route['route'][i]['key'] = str(key_enc)
+                json_obj = json.dumps(str(generate_route), indent=4)
+                pctrl.files(temproutefile, 'write', str(json_obj + '\n'))
