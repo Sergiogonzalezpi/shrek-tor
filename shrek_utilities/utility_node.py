@@ -128,7 +128,7 @@ def recive_encrypt_file(my_ip, my_port, outputfile=''):
 
     print('[+] Wait key ...')
     message_key = psr.recive(my_ip, my_port)
-    print('[+] Wait key ...')
+    print('[+] Wait data ...')
     message_data = psr.recive(my_ip, my_port)
     print(message_key)
     print(message_data)

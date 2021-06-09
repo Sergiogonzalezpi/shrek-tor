@@ -68,7 +68,7 @@ def add_host_to_network(route_config_file, ip, port, pubkey):
     index = len(json_data['hosts'])
     try:
         exists = 0
-        for count in range(0, index):
+        for count in range(0, index+1):
             if get_host_to_network(route_config_file, ip):
                 json_data['hosts'][count]['port'] = port
                 json_data['hosts'][count]['pubkey'] = pubkey
